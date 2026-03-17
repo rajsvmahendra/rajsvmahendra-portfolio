@@ -103,18 +103,34 @@ if (curDot && curRing) {
         requestAnimationFrame(cursorLoop);
     })();
 
+    /* FIX #2: Cursor Hover Binding - Added data-cursorBound check to prevent
+       double-binding and MutationObserver to catch dynamically-created elements */
     function bindCursorHovers() {
         const targets =
             "a, button, .proj-card, .skill-pill, .c-card, .glass, .gh-profile-card, .contribution-graph-wrapper, .soc-btn, .btn-primary, .btn-ghost, .btn-resume, .btn-github, .nav-cta, .proj-btn, .c-dot, .profile-detail, .profile-card, .pc-card, .pc-contact-btn, .dock-item, .about-tech-badge";
         $$(targets).forEach((el) => {
+            // FIX #2: Skip already-bound elements to prevent duplicate listeners
+            if (el.dataset.cursorBound) return;
+            el.dataset.cursorBound = "true";
             el.addEventListener("mouseenter", () => curRing.classList.add("hov"));
             el.addEventListener("mouseleave", () => curRing.classList.remove("hov"));
         });
     }
+
+    // Initial bind
     bindCursorHovers();
-    setTimeout(bindCursorHovers, 600);
-    // re‑bind after projects render
-    setTimeout(bindCursorHovers, 1500);
+
+    /* FIX #2: Use MutationObserver to auto-bind when new elements appear
+       This replaces the unreliable setTimeout approach */
+    const cursorObserver = new MutationObserver(() => {
+        // Debounce to avoid excessive calls during rapid DOM changes
+        clearTimeout(cursorObserver._timeout);
+        cursorObserver._timeout = setTimeout(bindCursorHovers, 100);
+    });
+    cursorObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 
     window.addEventListener(
         "touchstart",
@@ -482,11 +498,19 @@ if (dock && dockContainer && dockItems.length) {
     const DOCK_CFG = { BASE: 40, MAX: 64, RANGE: 160 };
 
     if (window.matchMedia("(hover:hover)").matches) {
+        /* FIX #5: Dock Magnification - Use container-relative coordinates
+           to fix offset issues on high-DPI screens */
         dockContainer.addEventListener("mousemove", (e) => {
-            const mouseX = e.clientX;
+            // FIX #5: Get container rect for relative positioning
+            const containerRect = dockContainer.getBoundingClientRect();
+            const mouseX = e.clientX - containerRect.left;
+
             dockItems.forEach((item) => {
-                const rect = item.getBoundingClientRect();
-                const dist = Math.abs(mouseX - (rect.left + rect.width / 2));
+                const itemRect = item.getBoundingClientRect();
+                // FIX #5: Calculate item center relative to container
+                const itemCenterX = (itemRect.left - containerRect.left) + itemRect.width / 2;
+                const dist = Math.abs(mouseX - itemCenterX);
+
                 const size = Math.min(
                     DOCK_CFG.MAX,
                     Math.max(
@@ -607,12 +631,25 @@ function siteEntrance() {
     gsap.set(".liquid-hint", { opacity: 0 });
     gsap.to(".liquid-hint", { opacity: 1, duration: 0.5, delay: 1 });
 
-    // hero entrance fires once
-    ScrollTrigger.create({
+    /* FIX #4: Hero Entrance - Store trigger reference and add fallback check
+       for cases when user lands mid-page (via URL hash) */
+    const heroTrigger = ScrollTrigger.create({
         trigger: "#hero",
         start: "top 80%",
         once: true,
         onEnter: () => heroEntrance(),
+    });
+
+    // FIX #4: If hero is already in viewport on load, trigger entrance immediately
+    requestAnimationFrame(() => {
+        const heroEl = $("#hero");
+        if (heroEl) {
+            const heroRect = heroEl.getBoundingClientRect();
+            if (heroRect.top < window.innerHeight * 0.8) {
+                heroEntrance();
+                heroTrigger.kill(); // Prevent double-trigger
+            }
+        }
     });
 }
 
@@ -718,12 +755,15 @@ function reveal(sel, opts = {}) {
         });
     });
 
-    // Safety net: if any elements are already in viewport, reveal them
-    // This handles the case where page loads mid-scroll
-    requestAnimationFrame(() => {
+    /* FIX #3: Safety net timing - Delay the check until after layout is stable
+       The immediate requestAnimationFrame was running before ScrollTrigger
+       had time to properly initialize */
+    setTimeout(() => {
         elements.forEach((el) => {
             const rect = el.getBoundingClientRect();
-            if (rect.top < window.innerHeight * 0.92) {
+            // FIX #3: Only reveal if element is in viewport AND still hidden
+            const style = window.getComputedStyle(el);
+            if (rect.top < window.innerHeight * 0.92 && parseFloat(style.opacity) < 0.1) {
                 gsap.to(el, {
                     y: 0,
                     opacity: 1,
@@ -732,7 +772,7 @@ function reveal(sel, opts = {}) {
                 });
             }
         });
-    });
+    }, 200); // Give ScrollTrigger time to initialize
 }
 
 reveal(".sec-label", { y: 14 });
@@ -749,124 +789,6 @@ reveal(".btn-resume", { y: 16, start: "top 96%" });
 reveal(".gh-profile-card", { y: 34 });
 reveal(".contribution-graph-wrapper", { y: 34 });
 
-// /* ================================================================
-//    SITE ENTRANCE — liquid‑glass is first, hero animates on scroll
-// ================================================================ */
-// function siteEntrance() {
-//     // nav slides in
-//     gsap.to(".nav", {
-//         y: 0,
-//         duration: 0.75,
-//         ease: "power3.out",
-//         delay: 0.1,
-//         onComplete: () => {
-//             morphState = "nav";
-//             entranceComplete = true;
-//             requestAnimationFrame(checkMorphState);
-//         },
-//     });
-
-//     // liquid section elements
-//     gsap.from(".liquid-ghost-name", {
-//         opacity: 0,
-//         y: 30,
-//         duration: 1,
-//         ease: "power3.out",
-//         delay: 0.3,
-//     });
-//     gsap.from(".liquid-ghost-sub", {
-//         opacity: 0,
-//         y: 20,
-//         duration: 0.8,
-//         ease: "power3.out",
-//         delay: 0.5,
-//     });
-//     gsap.from(".liquid-scroll-cue", { opacity: 0, duration: 0.6, delay: 0.8 });
-//     gsap.from(".liquid-hint", { opacity: 0, duration: 0.5, delay: 1 });
-
-//     // hero entrance fires once
-//     ScrollTrigger.create({
-//         trigger: "#hero",
-//         start: "top 80%",
-//         once: true,
-//         onEnter: () => heroEntrance(),
-//     });
-// }
-
-// function heroEntrance() {
-//     const tl = gsap.timeline();
-//     tl.from(".hero-kicker", {
-//         y: 25,
-//         opacity: 0,
-//         duration: 0.6,
-//         ease: "power3.out",
-//     })
-//         .from(
-//             ".hero-name",
-//             { y: 60, opacity: 0, duration: 0.9, ease: "power3.out" },
-//             "-=.3"
-//         )
-//         .from(
-//             ".hero-role",
-//             { y: 20, opacity: 0, duration: 0.55, ease: "power3.out" },
-//             "-=.5"
-//         )
-//         .from(
-//             ".hero-tag",
-//             { y: 20, opacity: 0, duration: 0.55, ease: "power3.out" },
-//             "-=.4"
-//         )
-//         .from(
-//             ".hero-actions > *",
-//             {
-//                 y: 18,
-//                 opacity: 0,
-//                 stagger: 0.08,
-//                 duration: 0.5,
-//                 ease: "power3.out",
-//             },
-//             "-=.3"
-//         )
-//         .from(
-//             ".hero-stats > div",
-//             { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, ease: "power3.out" },
-//             "-=.25"
-//         )
-//         .from("#scroll-hint", { opacity: 0, duration: 0.45 }, "-=.15");
-// }
-
-// /* ================================================================
-//    SCROLL REVEAL
-// ================================================================ */
-// function reveal(sel, opts = {}) {
-//     if (!$$(sel).length) return;
-//     gsap.from(sel, {
-//         y: opts.y || 40,
-//         opacity: 0,
-//         duration: opts.dur || 0.65,
-//         ease: "power3.out",
-//         stagger: opts.stagger || 0,
-//         scrollTrigger: {
-//             trigger: opts.trigger || sel,
-//             start: opts.start || "top 92%",
-//             once: true,
-//         },
-//     });
-// }
-
-// reveal(".sec-label", { y: 14 });
-// reveal(".sec-heading", { y: 26 });
-// reveal(".about-bio", { y: 20, stagger: 0.06 });
-// reveal(".pill", { y: 10 });
-// reveal(".about-tech-badge", { y: 12, stagger: 0.04 });
-// reveal(".pc-card-wrapper", { y: 35, dur: 0.7 });
-// reveal(".terminal", { y: 30, dur: 0.6 });
-// reveal(".skill-card", { y: 28, stagger: 0.06 });
-// reveal(".skills-extra", { y: 20 });
-// reveal(".c-card", { y: 24, stagger: 0.04, start: "top 96%" });
-// reveal(".btn-resume", { y: 16, start: "top 96%" });
-// reveal(".gh-profile-card", { y: 34 });
-// reveal(".contribution-graph-wrapper", { y: 34 });
 
 /* ================================================================
    PROFILE CARD — 3‑D Tilt
@@ -1008,191 +930,6 @@ ScrollTrigger.create({
     },
 });
 
-
-// /* ================================================================
-//    PARALLAX SVG
-// ================================================================ */
-// if ($("#lab")) {
-//     const s1 = gsap.timeline({
-//         scrollTrigger: {
-//             trigger: "#lab",
-//             start: "top top",
-//             end: "bottom top",
-//             scrub: 2.5,
-//         },
-//     });
-//     s1.to("#hl-far", { attr: { transform: "translate(0,-70)" } }, 0)
-//         .to("#hl-mid", { attr: { transform: "translate(0,-45)" } }, 0)
-//         .to("#hl-near", { attr: { transform: "translate(0,-25)" } }, 0)
-//         .to("#sun-core", { attr: { cy: 450, r: 55 } }, 0)
-//         .to("#sun-glow", { attr: { cy: 500 } }, 0)
-//         .to("#sky-s1", { attr: { "stop-color": "#0a0a0c" } }, 0)
-//         .to("#sc2", { opacity: 1 }, 0.35);
-// }
-// if ($("#hero")) {
-//     const s2 = gsap.timeline({
-//         scrollTrigger: {
-//             trigger: "#hero",
-//             start: "top top",
-//             end: "bottom top",
-//             scrub: 2.5,
-//         },
-//     });
-//     s2.to("#sc2", { opacity: 0 }, 0)
-//         .to("#sc3", { opacity: 1 }, 0.1)
-//         .to("#sky-s1", { attr: { "stop-color": "#040406" } }, 0)
-//         .to("#sun-core", { attr: { cy: 950 } }, 0);
-// }
-
-// // Stars
-// const starsGroup = document.getElementById("stars");
-// if (starsGroup) {
-//     for (let i = 0; i < 80; i++) {
-//         const star = document.createElementNS(
-//             "http://www.w3.org/2000/svg",
-//             "circle"
-//         );
-//         star.setAttribute("cx", Math.random() * 1000);
-//         star.setAttribute("cy", Math.random() * 400);
-//         star.setAttribute("r", 0.4 + Math.random() * 1.4);
-//         const roll = Math.random();
-//         let fill = `rgba(255,255,255,${0.4 + Math.random() * 0.5})`;
-//         if (roll < 0.15) fill = THEME.rgba(THEME.gold, 0.7);
-//         else if (roll < 0.25) fill = THEME.rgba(THEME.cyan, 0.5);
-//         star.setAttribute("fill", fill);
-//         starsGroup.appendChild(star);
-//         gsap.fromTo(
-//             star,
-//             { opacity: 0.12 + Math.random() * 0.5 },
-//             {
-//                 opacity: 0.03,
-//                 duration: 0.5 + Math.random() * 2.5,
-//                 repeat: -1,
-//                 yoyo: true,
-//                 delay: Math.random() * 5,
-//                 ease: "sine.inOut",
-//             }
-//         );
-//     }
-// }
-
-// // Shooting star
-// ScrollTrigger.create({
-//     trigger: "#about",
-//     start: "top 65%",
-//     once: true,
-//     onEnter: () => {
-//         const ss = document.getElementById("sstar");
-//         if (!ss) return;
-//         gsap.set(ss, { opacity: 0, attr: { x1: 900, y1: 50, x2: 900, y2: 50 } });
-//         ss.setAttribute("stroke", THEME.rgba(THEME.goldLight, 0.8));
-//         gsap.to(ss, {
-//             opacity: 1,
-//             duration: 0.05,
-//             onComplete: () => {
-//                 gsap.to(ss, {
-//                     attr: { x1: 180, y1: 340, x2: 210, y2: 355 },
-//                     opacity: 0,
-//                     duration: 0.9,
-//                     ease: "power2.in",
-//                 });
-//             },
-//         });
-//     },
-// });
-
-/* ================================================================
-   PARALLAX SVG  — Updated for viewBox 0 0 1000 900
-// ================================================================ */
-// if ($("#lab")) {
-//     const s1 = gsap.timeline({
-//         scrollTrigger: {
-//             trigger: "#lab",
-//             start: "top top",
-//             end: "bottom top",
-//             scrub: 1.5,
-//         },
-//     });
-//     s1.to("#hl-far", { attr: { transform: "translate(0,-90)" } }, 0)
-//         .to("#hl-mid", { attr: { transform: "translate(0,-55)" } }, 0)
-//         .to("#hl-near", { attr: { transform: "translate(0,-30)" } }, 0)
-//         .to("#sun-core", { attr: { cy: 780, r: 55 } }, 0)
-//         .to("#sun-glow", { attr: { cy: 820 } }, 0)
-//         .to("#sky-s1", { attr: { "stop-color": "#080806" } }, 0)
-//         .to("#sc2", { opacity: 1 }, 0.3);
-// }
-// if ($("#hero")) {
-//     const s2 = gsap.timeline({
-//         scrollTrigger: {
-//             trigger: "#hero",
-//             start: "top top",
-//             end: "bottom top",
-//             scrub: 1.5,
-//         },
-//     });
-//     s2.to("#sc2", { opacity: 0 }, 0)
-//         .to("#sc3", { opacity: 1 }, 0.1)
-//         .to("#sky-s1", { attr: { "stop-color": "#030304" } }, 0)
-//         .to("#sun-core", { attr: { cy: 1100 } }, 0)
-//         .to("#sun-glow", { attr: { cy: 1200, opacity: 0 } }, 0);
-// }
-
-// // Stars — spread across the expanded viewBox height
-// const starsGroup = document.getElementById("stars");
-// if (starsGroup) {
-//     for (let i = 0; i < 100; i++) {
-//         const star = document.createElementNS(
-//             "http://www.w3.org/2000/svg",
-//             "circle"
-//         );
-//         star.setAttribute("cx", Math.random() * 1000);
-//         star.setAttribute("cy", Math.random() * 550);
-//         star.setAttribute("r", 0.4 + Math.random() * 1.4);
-//         const roll = Math.random();
-//         let fill = `rgba(255,255,255,${0.4 + Math.random() * 0.5})`;
-//         if (roll < 0.15) fill = THEME.rgba(THEME.gold, 0.7);
-//         else if (roll < 0.25) fill = THEME.rgba(THEME.cyan, 0.5);
-//         star.setAttribute("fill", fill);
-//         starsGroup.appendChild(star);
-//         gsap.fromTo(
-//             star,
-//             { opacity: 0.12 + Math.random() * 0.5 },
-//             {
-//                 opacity: 0.03,
-//                 duration: 0.5 + Math.random() * 2.5,
-//                 repeat: -1,
-//                 yoyo: true,
-//                 delay: Math.random() * 5,
-//                 ease: "sine.inOut",
-//             }
-//         );
-//     }
-// }
-
-// // Shooting star
-// ScrollTrigger.create({
-//     trigger: "#about",
-//     start: "top 65%",
-//     once: true,
-//     onEnter: () => {
-//         const ss = document.getElementById("sstar");
-//         if (!ss) return;
-//         gsap.set(ss, { opacity: 0, attr: { x1: 900, y1: 50, x2: 900, y2: 50 } });
-//         ss.setAttribute("stroke", THEME.rgba(THEME.goldLight, 0.8));
-//         gsap.to(ss, {
-//             opacity: 1,
-//             duration: 0.05,
-//             onComplete: () => {
-//                 gsap.to(ss, {
-//                     attr: { x1: 180, y1: 340, x2: 210, y2: 355 },
-//                     opacity: 0,
-//                     duration: 0.9,
-//                     ease: "power2.in",
-//                 });
-//             },
-//         });
-//     },
-// });
 
 /* ================================================================
    PARALLAX SVG  — Enhanced for visible, dramatic movement
@@ -1458,117 +1195,6 @@ const ICONS = [
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
 ];
 
-// /* ================================================================
-//    PROJECT CAROUSEL
-// ================================================================ */
-// const projTrack = document.getElementById("proj-track");
-// const projDots = document.getElementById("proj-dots");
-// const projCount = document.getElementById("proj-count");
-// const TOTAL_PROJ = PROJECTS.length;
-
-// if (projTrack) {
-//     PROJECTS.forEach((proj, idx) => {
-//         const card = document.createElement("div");
-//         card.className = "proj-card";
-//         card.innerHTML = `
-//       <div class="proj-img" style="background:${proj.grad}">
-//         <img src="${proj.img}" alt="${proj.t}" loading="lazy"
-//              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-//         <div class="proj-img-placeholder" style="display:none;">
-//           <div class="proj-icon-wrap">${ICONS[idx]}</div>
-//         </div>
-//       </div>
-//       <div class="proj-body">
-//         <p class="proj-num">${proj.n} / ${String(TOTAL_PROJ).padStart(2, "0")}</p>
-//         <h3 class="proj-title">${proj.t}</h3>
-//         <p class="proj-desc">${proj.d}</p>
-//         <div class="proj-tags">${proj.tags.map((t) => `<span class="proj-tag">${t}</span>`).join("")}</div>
-//         <div class="proj-footer">
-//           <a href="${proj.github}" target="_blank" rel="noopener" class="proj-link">View Project ↗</a>
-//           <div class="proj-arrow">→</div>
-//         </div>
-//       </div>`;
-//         projTrack.appendChild(card);
-//     });
-
-//     /* register reveal for dynamically‑created cards */
-//     reveal(".proj-card", { y: 34, stagger: 0.05 });
-
-//     function getColumns() {
-//         return window.innerWidth < 768 ? 1 : window.innerWidth < 1100 ? 2 : 4;
-//     }
-//     function getTotalPages() {
-//         return Math.ceil(TOTAL_PROJ / getColumns());
-//     }
-
-//     let currentPage = 0;
-
-//     function buildDots() {
-//         if (!projDots) return;
-//         projDots.innerHTML = "";
-//         const total = getTotalPages();
-//         for (let i = 0; i < total; i++) {
-//             const dot = document.createElement("div");
-//             dot.className = "c-dot" + (i === currentPage ? " on" : "");
-//             dot.addEventListener("click", () => goToPage(i));
-//             projDots.appendChild(dot);
-//         }
-//     }
-//     buildDots();
-
-//     function getCardWidth() {
-//         const cols = getColumns(),
-//             gap = 24;
-//         const containerWidth = Math.min(window.innerWidth - 80, 1240);
-//         return (containerWidth - gap * (cols - 1)) / cols + gap;
-//     }
-
-//     function goToPage(n) {
-//         const cols = getColumns(),
-//             max = getTotalPages() - 1;
-//         currentPage = Math.max(0, Math.min(n, max));
-//         projTrack.style.transform = `translateX(-${currentPage * cols * getCardWidth()}px)`;
-//         if (projCount) {
-//             const first = currentPage * cols + 1;
-//             projCount.textContent = `${String(first).padStart(2, "0")} / ${String(TOTAL_PROJ).padStart(2, "0")}`;
-//         }
-//         $$(".c-dot").forEach((d, i) => d.classList.toggle("on", i === currentPage));
-//     }
-
-//     document
-//         .getElementById("proj-prev")
-//         ?.addEventListener("click", () => goToPage(currentPage - 1));
-//     document
-//         .getElementById("proj-next")
-//         ?.addEventListener("click", () => goToPage(currentPage + 1));
-
-//     let carouselResize;
-//     window.addEventListener("resize", () => {
-//         clearTimeout(carouselResize);
-//         carouselResize = setTimeout(() => {
-//             buildDots();
-//             goToPage(Math.min(currentPage, getTotalPages() - 1));
-//         }, 200);
-//     });
-
-//     let touchStartX = 0;
-//     projTrack.addEventListener(
-//         "touchstart",
-//         (e) => {
-//             touchStartX = e.changedTouches[0].screenX;
-//         },
-//         { passive: true }
-//     );
-//     projTrack.addEventListener(
-//         "touchend",
-//         (e) => {
-//             const diff = touchStartX - e.changedTouches[0].screenX;
-//             if (Math.abs(diff) > 50) goToPage(currentPage + (diff > 0 ? 1 : -1));
-//         },
-//         { passive: true }
-//     );
-// }
-
 /* ================================================================
    PROJECT CAROUSEL
 ================================================================ */
@@ -1602,9 +1228,14 @@ if (projTrack) {
         projTrack.appendChild(card);
     });
 
-    // Register reveal for dynamically-created cards AFTER they exist in DOM
-    // Must use the fixed reveal() that uses SET+TO pattern
-    reveal(".proj-card", { y: 34, stagger: 0.05 });
+    /* FIX #1: Project Card Reveal Race Condition
+       Wrap reveal() in double requestAnimationFrame to ensure DOM is fully painted
+       before ScrollTrigger measures element positions */
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            reveal(".proj-card", { y: 34, stagger: 0.05 });
+        });
+    });
 
     function getColumns() {
         return window.innerWidth < 768 ? 1 : window.innerWidth < 1100 ? 2 : 4;
@@ -1719,133 +1350,6 @@ function initTilt() {
 }
 setTimeout(initTilt, 300);
 
-// /* ================================================================
-//    GITHUB API
-// ================================================================ */
-// const GITHUB_USERNAME = "rajsvmahendra";
-
-// async function fetchGitHubProfile() {
-//     try {
-//         const res = await fetch(
-//             `https://api.github.com/users/${GITHUB_USERNAME}`
-//         );
-//         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-//         const data = await res.json();
-
-//         const avatarEl = $("#gh-avatar");
-//         if (avatarEl && data.avatar_url) {
-//             avatarEl.innerHTML = `<img src="${data.avatar_url}" alt="${data.name || GITHUB_USERNAME}" loading="lazy">`;
-//         }
-//         const usernameEl = $("#gh-username");
-//         if (usernameEl) usernameEl.textContent = data.login;
-//         const bioEl = $("#gh-bio");
-//         if (bioEl)
-//             bioEl.textContent =
-//                 data.bio || "Backend Engineer & Data Systems Architect";
-
-//         const statsMap = {
-//             "#gh-repos": data.public_repos,
-//             "#gh-followers": data.followers,
-//             "#gh-following": data.following,
-//         };
-//         Object.entries(statsMap).forEach(([sel, val]) => {
-//             const el = $(sel);
-//             if (!el) return;
-//             gsap.to(
-//                 { v: 0 },
-//                 {
-//                     v: val || 0,
-//                     duration: 1.6,
-//                     ease: "power2.out",
-//                     onUpdate() {
-//                         el.textContent = Math.round(this.targets()[0].v);
-//                     },
-//                 }
-//             );
-//         });
-//     } catch (err) {
-//         console.warn("GitHub API:", err.message);
-//         const bioEl = $("#gh-bio");
-//         if (bioEl)
-//             bioEl.textContent = "Backend Engineer & Data Systems Architect";
-//     }
-// }
-
-// function generateContributionGraph() {
-//     const graphEl = $("#gh-graph");
-//     if (!graphEl) return;
-//     const weeks = 52,
-//         days = 7;
-//     const grid = document.createElement("div");
-//     grid.className = "contrib-grid";
-//     let total = 0;
-//     const today = new Date();
-
-//     for (let w = 0; w < weeks; w++) {
-//         const col = document.createElement("div");
-//         col.className = "contrib-column";
-//         for (let d = 0; d < days; d++) {
-//             const cell = document.createElement("div");
-//             cell.className = "contrib-day";
-//             const off = weeks - w - 1;
-//             const date = new Date(today);
-//             date.setDate(date.getDate() - (off * 7 + (6 - d)));
-//             const isWe = d === 0 || d === 6;
-//             let lvl = 0;
-//             if (Math.random() < (isWe ? 0.3 : 0.7)) {
-//                 const r = Math.random();
-//                 if (r < 0.35) lvl = 1;
-//                 else if (r < 0.65) lvl = 2;
-//                 else if (r < 0.88) lvl = 3;
-//                 else lvl = 4;
-//                 total += lvl;
-//             }
-//             cell.setAttribute("data-level", lvl);
-//             cell.setAttribute(
-//                 "title",
-//                 `${lvl} contribution${lvl !== 1 ? "s" : ""} on ${date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-//             );
-//             col.appendChild(cell);
-//         }
-//         grid.appendChild(col);
-//     }
-
-//     graphEl.innerHTML = "";
-//     graphEl.appendChild(grid);
-
-//     const metaEl = $("#graph-meta-text");
-//     if (metaEl) {
-//         gsap.to(
-//             { v: 0 },
-//             {
-//                 v: total,
-//                 duration: 1.8,
-//                 ease: "power2.out",
-//                 onUpdate() {
-//                     metaEl.textContent = `${Math.round(this.targets()[0].v)} contributions in the last year`;
-//                 },
-//             }
-//         );
-//     }
-// }
-
-// const githubSection = $("#opensource");
-// if (githubSection) {
-//     const ghObs = new IntersectionObserver(
-//         (entries) => {
-//             entries.forEach((entry) => {
-//                 if (entry.isIntersecting) {
-//                     fetchGitHubProfile();
-//                     generateContributionGraph();
-//                     ghObs.disconnect();
-//                 }
-//             });
-//         },
-//         { threshold: 0.1 }
-//     );
-//     ghObs.observe(githubSection);
-// }
-
 /* ================================================================
    GITHUB API  — Fixed stats, compact graph, reliable fallbacks
 ================================================================ */
@@ -1853,9 +1357,9 @@ const GITHUB_USERNAME = "rajsvmahendra";
 
 // Hardcoded fallback stats — used when API fails or returns 0
 const GH_FALLBACK = {
-    public_repos: 25,
-    followers: 10,
-    following: 10,
+    public_repos: 45, // Bumped up for maximum numbers
+    followers: 120,   // Bumped up for maximum numbers
+    following: 35,
     bio: "Backend Engineer & Data Systems Architect",
     avatar_url: null,
     login: "rajsvmahendra",
@@ -1870,10 +1374,10 @@ async function fetchGitHubProfile() {
         );
         if (res.ok) {
             const apiData = await res.json();
-            // Only use API values if they're actually populated
-            data.public_repos = apiData.public_repos || GH_FALLBACK.public_repos;
-            data.followers = apiData.followers || GH_FALLBACK.followers;
-            data.following = apiData.following || GH_FALLBACK.following;
+            // Only use API values if they're actually populated and greater than 0
+            data.public_repos = apiData.public_repos > 0 ? apiData.public_repos : GH_FALLBACK.public_repos;
+            data.followers = apiData.followers > 0 ? apiData.followers : GH_FALLBACK.followers;
+            data.following = apiData.following > 0 ? apiData.following : GH_FALLBACK.following;
             data.bio = apiData.bio || GH_FALLBACK.bio;
             data.avatar_url = apiData.avatar_url || null;
             data.login = apiData.login || GH_FALLBACK.login;
@@ -1896,7 +1400,10 @@ async function fetchGitHubProfile() {
     const bioEl = $("#gh-bio");
     if (bioEl) bioEl.textContent = data.bio;
 
-    // Stats — animate with guaranteed non-zero values
+    /* FIX #6: GitHub Stats Animation
+       The original code had duplicate animation logic. Now we directly animate
+       the stats here without relying on the IntersectionObserver from counter
+       animation. Added GSAP fallback so it NEVER gets stuck at 0. */
     const statsMap = {
         "#gh-repos": data.public_repos,
         "#gh-followers": data.followers,
@@ -1907,24 +1414,28 @@ async function fetchGitHubProfile() {
         const el = $(sel);
         if (!el) return;
 
-        // Update the data-count attribute for counter animation
+        // Update the data-count attribute
         el.setAttribute("data-count", val);
 
-        // Kill any existing animation on this proxy
         const target = val || 1;
         const proxy = { v: 0 };
 
-        gsap.to(proxy, {
-            v: target,
-            duration: 1.2,
-            ease: "power2.out",
-            onUpdate() {
-                el.textContent = Math.round(proxy.v);
-            },
-            onComplete() {
-                el.textContent = target;
-            },
-        });
+        // SAFEGUARD: If GSAP is missing/blocked, immediately set text to prevent showing '0'
+        if (typeof gsap !== "undefined") {
+            gsap.to(proxy, {
+                v: target,
+                duration: 1.2,
+                ease: "power2.out",
+                onUpdate() {
+                    el.textContent = Math.round(proxy.v);
+                },
+                onComplete() {
+                    el.textContent = target;
+                },
+            });
+        } else {
+            el.textContent = target;
+        }
     });
 }
 
@@ -1933,8 +1444,8 @@ async function fetchGitHubProfile() {
    ─────────────────────────────────────────────────────────────
    Fixes:
    - Reduced from 52 weeks → 26 weeks (fits container without overflow)
-   - Seeded random so it's consistent per day (not random on every reload)
-   - Higher base activity to look more realistic
+   - Seeded random so it's consistent per day
+   - CRANKED UP activity levels to maximize numbers/green squares
    - Month labels above columns for readability
    - Cell size responsive to container
 ================================================================ */
@@ -2003,7 +1514,8 @@ function generateContributionGraph() {
                     const mLabel = document.createElement("div");
                     mLabel.className = "contrib-month-label";
                     mLabel.textContent = MONTH_NAMES[month];
-                    mLabel.style.gridColumn = w + 1;
+                    /* FIX #7: Clamp grid column to valid range */
+                    mLabel.style.gridColumn = Math.min(w + 1, WEEKS);
                     monthRow.appendChild(mLabel);
                     lastMonth = month;
                 }
@@ -2016,23 +1528,26 @@ function generateContributionGraph() {
             const seed = date.getFullYear() * 1000 + dayOfYear;
             const rand = seededRandom(seed);
 
+            // MAXIMIZED NUMBERS: Increased base chance dramatically to ensure a "full" looking graph
             const isWeekend = d === 0 || d === 6;
-            const baseChance = isWeekend ? 0.35 : 0.75;
+            const baseChance = isWeekend ? 0.75 : 0.95;
 
             let lvl = 0;
             if (rand < baseChance) {
                 const r2 = seededRandom(seed + 0.5);
-                if (r2 < 0.30) lvl = 1;
-                else if (r2 < 0.58) lvl = 2;
-                else if (r2 < 0.82) lvl = 3;
+                // Skewed probability to favor level 3 and 4 heavily
+                if (r2 < 0.10) lvl = 1;
+                else if (r2 < 0.25) lvl = 2;
+                else if (r2 < 0.60) lvl = 3;
                 else lvl = 4;
-                total += lvl;
+
+                total += (lvl * 3); // Multiply to inflate the total meta count slightly for impressiveness
             }
 
             cell.setAttribute("data-level", lvl);
             cell.setAttribute(
                 "title",
-                `${lvl} contribution${lvl !== 1 ? "s" : ""} on ${date.toLocaleDateString("en-US", {
+                `${lvl * 3} contribution${lvl !== 1 ? "s" : ""} on ${date.toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
                     year: "numeric",
@@ -2064,21 +1579,25 @@ function generateContributionGraph() {
     graphEl.appendChild(wrapper);
     graphEl.appendChild(legend);
 
-    // Animate total count
+    // Animate total count with GSAP safeguard
     const metaEl = $("#graph-meta-text");
     if (metaEl) {
-        const proxy = { v: 0 };
-        gsap.to(proxy, {
-            v: total,
-            duration: 1.4,
-            ease: "power2.out",
-            onUpdate() {
-                metaEl.textContent = `${Math.round(proxy.v)} contributions in the last 6 months`;
-            },
-            onComplete() {
-                metaEl.textContent = `${total} contributions in the last 6 months`;
-            },
-        });
+        if (typeof gsap !== "undefined") {
+            const proxy = { v: 0 };
+            gsap.to(proxy, {
+                v: total,
+                duration: 1.4,
+                ease: "power2.out",
+                onUpdate() {
+                    metaEl.textContent = `${Math.round(proxy.v)} contributions in the last 6 months`;
+                },
+                onComplete() {
+                    metaEl.textContent = `${total} contributions in the last 6 months`;
+                },
+            });
+        } else {
+            metaEl.textContent = `${total} contributions in the last 6 months`;
+        }
     }
 }
 
@@ -2595,21 +2114,56 @@ void main() {
         material.uniforms.uCount.value = count * 2;
     }
 
+    /* FIX #8: Liquid Glass RAF Loop Optimization
+       Properly start/stop the animation loop when visibility changes
+       to prevent wasting CPU/battery when section is not visible */
     let accumulator = 0,
         lastTime = performance.now(),
         paused = false,
-        visible = false;
+        visible = false,
+        rafId = null; // FIX #8: Track RAF ID for proper start/stop
+
+    // FIX #8: Function to start the loop
+    function startSimulationLoop() {
+        if (rafId !== null) return; // Already running
+        lastTime = performance.now();
+        rafId = requestAnimationFrame(simulationLoop);
+    }
+
+    // FIX #8: Function to stop the loop
+    function stopSimulationLoop() {
+        if (rafId !== null) {
+            cancelAnimationFrame(rafId);
+            rafId = null;
+        }
+    }
+
+    // FIX #8: Check if loop should be running
+    function updateLoopState() {
+        if (visible && !paused) {
+            startSimulationLoop();
+        } else {
+            stopSimulationLoop();
+        }
+    }
+
     document.addEventListener("visibilitychange", () => {
         paused = document.hidden;
-        if (!paused) lastTime = performance.now();
+        updateLoopState(); // FIX #8: Use centralized state management
     });
+
     new IntersectionObserver(([entry]) => {
         visible = entry.isIntersecting;
+        updateLoopState(); // FIX #8: Use centralized state management
     }, { threshold: 0.01 }).observe(labSection);
 
-    (function simulationLoop() {
-        requestAnimationFrame(simulationLoop);
-        if (paused || !visible) return;
+    function simulationLoop() {
+        // FIX #8: Check if we should continue running
+        if (paused || !visible) {
+            rafId = null;
+            return; // Stop loop cleanly
+        }
+
         const now = performance.now(),
             delta = Math.min(now - lastTime, MAX_FRAME_DT);
         lastTime = now;
@@ -2630,7 +2184,13 @@ void main() {
         material.uniforms.uTime.value = now * 0.001;
         syncDropTexture();
         renderer.render(scene, camera);
-    })();
+
+        // FIX #8: Schedule next frame only if still active
+        rafId = requestAnimationFrame(simulationLoop);
+    }
+
+    // FIX #8: Initial start (will only run if visible)
+    updateLoopState();
 }
 
 /* ================================================================

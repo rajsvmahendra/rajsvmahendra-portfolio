@@ -1922,10 +1922,21 @@ button {
     letter-spacing: -.01em;
 }
 
-/* FIX #1: REMOVED DUPLICATE .contribution-graph
-   The first definition was here (deleted). Only keeping the
-   compact layout version below in the "CONTRIBUTION GRAPH" section.
-   ---------------------------------------------------------------- */
+/* .contribution-graph {
+    flex: 1;
+    min-height: 200px;
+    background: rgba(8, 8, 12, .7);
+    border-radius: 14px;
+    padding: 1.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, .03);
+    margin-bottom: 1.4rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, .3);
+} */
 
 .graph-loading {
     font-family: var(--f-mono);
@@ -1957,10 +1968,72 @@ button {
     border: 1px solid rgba(255, 255, 255, .03);
 }
 
-/* FIX #2 & #3: REMOVED DUPLICATE .contrib-grid, .contrib-column, .contrib-day
-   and their [data-level] styles. Only keeping the compact layout versions
-   below in the "CONTRIBUTION GRAPH — Compact layout" section.
-   ---------------------------------------------------------------- */
+.contrib-grid {
+    display: flex;
+    gap: 4px;
+    flex-wrap: nowrap;
+}
+
+.contrib-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.contrib-day {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid rgba(255, 255, 255, .04);
+    transition: all .2s var(--ease-out);
+    cursor: pointer;
+}
+
+.contrib-day:hover {
+    transform: scale(1.3);
+}
+
+.contrib-day[data-level="0"] {
+    background: rgba(212, 175, 55, .03);
+}
+
+.contrib-day[data-level="1"] {
+    background: rgba(212, 175, 55, .15);
+    border-color: rgba(212, 175, 55, .2);
+}
+
+.contrib-day[data-level="1"]:hover {
+    box-shadow: 0 0 10px rgba(212, 175, 55, .2);
+}
+
+.contrib-day[data-level="2"] {
+    background: rgba(212, 175, 55, .35);
+    border-color: rgba(212, 175, 55, .3);
+}
+
+.contrib-day[data-level="2"]:hover {
+    box-shadow: 0 0 12px rgba(212, 175, 55, .3);
+}
+
+.contrib-day[data-level="3"] {
+    background: rgba(212, 175, 55, .6);
+    border-color: rgba(212, 175, 55, .4);
+}
+
+.contrib-day[data-level="3"]:hover {
+    box-shadow: 0 0 14px rgba(212, 175, 55, .4);
+}
+
+.contrib-day[data-level="4"] {
+    background: var(--a1);
+    border-color: var(--gold-300);
+    box-shadow: 0 0 6px rgba(212, 175, 55, .4);
+}
+
+.contrib-day[data-level="4"]:hover {
+    box-shadow: 0 0 18px rgba(212, 175, 55, .6);
+}
 
 /* ============================================================
    CONTACT
@@ -2163,7 +2236,6 @@ button {
 .btn-resume:hover::before {
     opacity: 1;
 }
-
 
 /* ============================================================
    FOOTER — macOS Dock
@@ -2534,7 +2606,6 @@ button {
 
 /* ============================================================
    CONTRIBUTION GRAPH — Compact layout with labels
-   (SINGLE DEFINITION — duplicates removed per FIX #1, #2, #3, #5)
 ============================================================ */
 .contrib-wrapper {
     display: flex;
@@ -2613,7 +2684,6 @@ button {
     position: relative;
 }
 
-/* Contribution level colors (SINGLE DEFINITION) */
 .contrib-day[data-level="0"] {
     background: rgba(212, 175, 55, .03);
 }
@@ -2684,7 +2754,7 @@ button {
     padding: 0 4px;
 }
 
-/* Contribution graph container (SINGLE DEFINITION) */
+/* Remove old fixed-width sizing */
 .contribution-graph {
     flex: 1;
     min-height: 160px;
@@ -2693,15 +2763,13 @@ button {
     padding: 1.4rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     border: 1px solid rgba(255, 255, 255, .03);
     margin-bottom: 1.4rem;
     overflow: hidden;
     box-shadow: inset 0 2px 10px rgba(0, 0, 0, .3);
 }
 
-/* Responsive adjustments for contribution graph */
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .contrib-day-labels {
         display: none;
