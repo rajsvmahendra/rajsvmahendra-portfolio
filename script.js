@@ -1095,60 +1095,81 @@ ScrollTrigger.create({
 const PROJECTS = [
     {
         n: "01",
+        t: "Verdict — AI Investment Research Engine",
+        d: "<strong>Problem:</strong> Evaluating companies for investment requires extensive, objective research.<br/><strong>Approach:</strong> Multi-agent system that runs adversarial analysis on business financials.<br/><strong>Contribution:</strong> Built a collaborative agentic framework simulating debates to minimize bias.<br/><strong>Outcome:</strong> Delivers clear, structured investment verdicts (INVEST, WATCHLIST, or PASS).",
+        tags: ["TypeScript", "CSS", "JavaScript"],
+        img: "images/verdict.png",
+        grad: "linear-gradient(135deg,#0a1218,#060a0e)",
+        github: "https://github.com/rajsvmahendra/verdict",
+    },
+    {
+        n: "02",
+        t: "ExpenseLens — Shared Expense Intelligence Platform",
+        d: "<strong>Problem:</strong> Auditing shared expenses across multiple currencies and membership timelines is highly complex.<br/><strong>Approach:</strong> Structured transaction ledgers with auditing capabilities and currency engines.<br/><strong>Contribution:</strong> Built a premium shared expense intelligence platform with timeline verification.<br/><strong>Outcome:</strong> Enabled fully transparent, explainable, and auditable shared ledgers.",
+        tags: ["TypeScript", "Python"],
+        img: "images/expenselens.png",
+        grad: "linear-gradient(135deg,#0c0812,#08060a)",
+        github: "https://github.com/rajsvmahendra/ExpenseLens",
+    },
+    {
+        n: "03",
         t: "MailFlow AI",
         d: "<strong>Problem:</strong> Manual email drafting is time-intensive.<br/><strong>Approach:</strong> NLP integration with OpenAI API and Streamlit.<br/><strong>Contribution:</strong> Developed an AI-driven assistant for context-aware email generation.<br/><strong>Outcome:</strong> Streamlined communication workflows and accelerated response times.",
         tags: ["Python", "NLP", "OpenAI", "Streamlit"],
         img: "images/mailflow.jpg",
         grad: "linear-gradient(135deg,#0a0a10,#12100a)",
-        github: "https://github.com/rajsvmahendra",
+        live: "https://mailflow-ai-phi.vercel.app/",
+        github: "https://github.com/rajsvmahendra/MailFlow-AI",
     },
     {
-        n: "02",
+        n: "04",
         t: "YouTube Clone",
         d: "<strong>Problem:</strong> Need for scalable, high-performance video streaming interfaces.<br/><strong>Approach:</strong> React ecosystem and modern API integration.<br/><strong>Contribution:</strong> Architected a dynamic, responsive video rendering platform with modular components.<br/><strong>Outcome:</strong> Delivered a seamless user experience with optimized frontend performance.",
         tags: ["React", "JavaScript", "CSS3", "API"],
         img: "images/youtube.jpg",
         grad: "linear-gradient(135deg,#120808,#0e0a12)",
-        github: "https://github.com/rajsvmahendra",
+        github: "https://github.com/rajsvmahendra/Youtube-Clone",
     },
     {
-        n: "03",
+        n: "05",
         t: "Fraud Detection Engine",
         d: "<strong>Problem:</strong> Financial transactions are vulnerable to undetected fraudulent activities.<br/><strong>Approach:</strong> Anomaly detection using Scikit-Learn and Pandas.<br/><strong>Contribution:</strong> Built a machine learning engine with an interactive analytics dashboard.<br/><strong>Outcome:</strong> Enhanced transaction security by accurately identifying suspicious patterns.",
         tags: ["Python", "Scikit-learn", "Pandas", "Streamlit"],
         img: "images/fraud.png",
         grad: "linear-gradient(135deg,#080c10,#0a1014)",
+        live: "https://fraud-detectionsystem.streamlit.app/",
         github: "https://github.com/rajsvmahendra",
     },
     {
-        n: "04",
+        n: "06",
         t: "QSR Analytics Dashboard",
         d: "<strong>Problem:</strong> Raw restaurant data lacks actionable business visibility.<br/><strong>Approach:</strong> Advanced DAX, data modeling, and Power BI.<br/><strong>Contribution:</strong> Engineered a comprehensive analytics dashboard mapping consumer behavior.<br/><strong>Outcome:</strong> Transformed complex datasets into strategic market and nutritional insights.",
         tags: ["Power BI", "DAX", "Data Modeling", "SQL"],
         img: "images/qsr.png",
         grad: "linear-gradient(135deg,#100c06,#0a0c14)",
+        live: "https://app.powerbi.com/view?r=eyJrIjoiODhlYWUxN2UtMDNmMi00Y2FiLTk1NjctODM4MzhmZDJkMGU1IiwidCI6ImUxNGU3M2ViLTUyNTEtNDM4OC04ZDY3LThmOWYyZTJkNWE0NiIsImMiOjEwfQ%3D%3D",
         github: "https://github.com/rajsvmahendra",
     },
     {
-        n: "05",
+        n: "07",
         t: "MiniStore",
         d: "<strong>Problem:</strong> Small businesses need accessible, high-performance product catalogs.<br/><strong>Approach:</strong> Vanilla JavaScript, HTML5, and CSS3.<br/><strong>Contribution:</strong> Developed a lightweight, responsive e-commerce interface for seamless browsing.<br/><strong>Outcome:</strong> Delivered a streamlined shopping experience optimized for speed and usability.",
         tags: ["HTML5", "CSS3", "JavaScript", "Bootstrap"],
         img: "images/ministore.jpg",
         grad: "linear-gradient(135deg,#0a0e0a,#100e08)",
-        github: "https://github.com/rajsvmahendra",
+        github: "https://github.com/rajsvmahendra/Ministore",
     },
     {
-        n: "06",
+        n: "08",
         t: "UniTrack",
         d: "<strong>Problem:</strong> Fragmented academic scheduling leads to decreased student productivity.<br/><strong>Approach:</strong> MVC architecture using Java GUI (JavaFX) and SQLite.<br/><strong>Contribution:</strong> Designed a centralized desktop application for task and progress management.<br/><strong>Outcome:</strong> Improved task organization and structured academic workflows for users.",
         tags: ["Java", "JavaFX", "SQLite", "MVC"],
         img: "images/uintrack.jpg",
         grad: "linear-gradient(135deg,#0c0a12,#100e18)",
-        github: "https://github.com/rajsvmahendra",
+        github: "https://github.com/rajsvmahendra/UniTrack",
     },
     {
-        n: "07",
+        n: "09",
         t: "RealTime Connect",
         d: "<strong>Problem:</strong> Standard HTTP protocols lack efficiency for instant, live messaging.<br/><strong>Approach:</strong> WebSockets via Node.js, Socket.IO, and Express.<br/><strong>Contribution:</strong> Architected a scalable, low-latency backend communication system.<br/><strong>Outcome:</strong> Enabled seamless, instant messaging across distributed clients.",
         tags: ["Node.js", "Socket.IO", "Express", "MongoDB"],
@@ -1157,7 +1178,7 @@ const PROJECTS = [
         github: "https://github.com/rajsvmahendra",
     },
     {
-        n: "08",
+        n: "10",
         t: "MERN Content Management System",
         d: "<strong>Problem:</strong> Managing dynamic web content requires secure and scalable infrastructure.<br/><strong>Approach:</strong> MERN Stack (MongoDB, Express, React, Node.js).<br/><strong>Contribution:</strong> Built a full-stack CMS with OTP verification and role-based access.<br/><strong>Outcome:</strong> Delivered a robust platform for secure, high-volume content administration.",
         tags: ["MongoDB", "Express", "React", "Node.js"],
@@ -1166,7 +1187,7 @@ const PROJECTS = [
         github: "https://github.com/rajsvmahendra",
     },
     {
-        n: "09",
+        n: "11",
         t: "Memory Visualizer",
         d: "<strong>Problem:</strong> Operating system memory concepts are abstract and difficult to grasp.<br/><strong>Approach:</strong> Python UI development using Tkinter and Matplotlib.<br/><strong>Contribution:</strong> Engineered an interactive visualizer for complex allocation algorithms.<br/><strong>Outcome:</strong> Provided an intuitive educational tool bridging theory and practical application.",
         tags: ["Python", "Tkinter", "Matplotlib", "Algorithms"],
@@ -1175,7 +1196,7 @@ const PROJECTS = [
         github: "https://github.com/rajsvmahendra",
     },
     {
-        n: "10",
+        n: "12",
         t: "EcoThunder",
         d: "<strong>Problem:</strong> Lack of interactive digital platforms for driving environmental awareness.<br/><strong>Approach:</strong> Responsive UI/UX design with modern web standards.<br/><strong>Contribution:</strong> Created an engaging, educational platform promoting sustainable practices.<br/><strong>Outcome:</strong> Fostered interactive user engagement with eco-conscious content.",
         tags: ["HTML5", "CSS3", "JavaScript", "UX/UI"],
@@ -1186,6 +1207,8 @@ const PROJECTS = [
 ];
 
 const ICONS = [
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>`,
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
@@ -1224,10 +1247,21 @@ if (projTrack) {
         <p class="proj-desc">${proj.d}</p>
         <div class="proj-tags">${proj.tags.map((t) => `<span class="proj-tag">${t}</span>`).join("")}</div>
         <div class="proj-footer">
-          <a href="${proj.github}" target="_blank" rel="noopener" class="proj-link">View Project ↗</a>
+          <div style="display: flex; gap: 0.9rem; flex-wrap: wrap;">
+            ${proj.live ? `<a href="${proj.live}" target="_blank" rel="noopener" class="proj-link">Live Demo ↗</a>` : ""}
+            <a href="${proj.github}" target="_blank" rel="noopener" class="proj-link">${proj.live ? "GitHub ↗" : "View Project ↗"}</a>
+          </div>
           <div class="proj-arrow">→</div>
         </div>
       </div>`;
+
+        // Make the entire card clickable to navigate to the project link (preferring live link if available)
+        card.addEventListener("click", (e) => {
+            if (e.target.closest("a")) return;
+            const targetUrl = proj.live || proj.github;
+            window.open(targetUrl, "_blank", "noopener,noreferrer");
+        });
+
         projTrack.appendChild(card);
     });
 
@@ -1364,7 +1398,7 @@ const GH_FALLBACK = {
     followers: 120,   // Bumped up for maximum numbers
     following: 35,
     bio: "Backend Engineer & Data Systems Architect",
-    avatar_url: null,
+    avatar_url: "https://github.com/rajsvmahendra.png",
     login: "rajsvmahendra",
 };
 
@@ -1382,7 +1416,7 @@ async function fetchGitHubProfile() {
             data.followers = apiData.followers > 0 ? apiData.followers : GH_FALLBACK.followers;
             data.following = apiData.following > 0 ? apiData.following : GH_FALLBACK.following;
             data.bio = apiData.bio || GH_FALLBACK.bio;
-            data.avatar_url = apiData.avatar_url || null;
+            data.avatar_url = apiData.avatar_url || GH_FALLBACK.avatar_url;
             data.login = apiData.login || GH_FALLBACK.login;
         }
     } catch (err) {
@@ -1604,22 +1638,11 @@ function generateContributionGraph() {
     }
 }
 
-// Trigger on section visibility
+// Trigger immediately on load to ensure data is always populated without waiting for scroll
 const githubSection = $("#opensource");
 if (githubSection) {
-    const ghObs = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    fetchGitHubProfile();
-                    generateContributionGraph();
-                    ghObs.disconnect();
-                }
-            });
-        },
-        { threshold: 0.1 }
-    );
-    ghObs.observe(githubSection);
+    fetchGitHubProfile();
+    generateContributionGraph();
 }
 
 /* ================================================================
@@ -3167,7 +3190,7 @@ window.addEventListener("beforeunload", () => window.scrollTo(0, 0));
                     start: "top 90%",
                     once: true,
                     onEnter: () => {
-                        gsap.from({ val: 0 }, {
+                        gsap.to({ val: 0 }, {
                             val: num,
                             duration: 1.5,
                             ease: "power2.out",
@@ -3222,6 +3245,81 @@ window.addEventListener("beforeunload", () => window.scrollTo(0, 0));
                 }
             });
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // IDLE FLOATING LOOPS (constant gentle movement)
+    // ═══════════════════════════════════════════════════════════════
+    if (typeof gsap !== 'undefined' && achieveGallery) {
+        const mainImg = document.querySelector('.achieve-img-main');
+        const secImg = document.querySelector('.achieve-img-secondary');
+        const terImg = document.querySelector('.achieve-img-tertiary');
+
+        if (mainImg && secImg && terImg) {
+            // Stopped constant idle floating for the center image to keep it steady
+            gsap.to(secImg, {
+                yPercent: -5,
+                duration: 5,
+                ease: "sine.inOut",
+                repeat: -1,
+                yoyo: true,
+                delay: 0.5
+            });
+            gsap.to(terImg, {
+                yPercent: 4,
+                duration: 4.5,
+                ease: "sine.inOut",
+                repeat: -1,
+                yoyo: true,
+                delay: 1
+            });
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // LIGHTBOX / CLICK-TO-OPEN FUNCTIONALITY
+    // ═══════════════════════════════════════════════════════════════
+    const lightbox = document.getElementById('achieve-lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxClose = document.querySelector('.lightbox-close');
+
+    if (lightbox && lightboxImg) {
+        document.querySelectorAll('.achieve-img').forEach((card) => {
+            card.addEventListener('click', () => {
+                const img = card.querySelector('img');
+                if (img) {
+                    lightboxImg.src = img.src;
+                    lightboxCaption.textContent = img.alt || '';
+                    lightbox.classList.add('active');
+                    lightbox.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        });
+
+        const closeLightbox = () => {
+            lightbox.classList.remove('active');
+            lightbox.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+            setTimeout(() => {
+                lightboxImg.src = '';
+                lightboxCaption.textContent = '';
+            }, 400);
+        };
+
+        lightboxClose?.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                closeLightbox();
+            }
+        });
     }
 
 })();
